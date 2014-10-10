@@ -1,0 +1,148 @@
+#!/bin/bash
+# symphAstman - Symfony Assetic manager
+# This is the symfony recompile script.  
+# It also works on dev, except when it looks for the apc settings on the
+# config_prod.yml it breaks, so those will need to be commented out first
+# before recompiling the symfony prod version on dev env. 
+#
+# Run this on your particular environment each time a change is deployed.
+# Note, you might also have to optomize the autoloader as well after complete,
+# you will see this at the bottom of the script, but its currently commented.
+
+# To run this script do the following from a terminal
+# Make sure the recompile script is exctracted to your bin dir. 
+# 
+# $su <your-dev-user> the user that you plan to develop with, i.e. not root.
+# $cd <your-root-symfony-site-dir>/
+# $ln -s bin/recompile #makes a symlink in your site root for the script
+# $./reprod #run it
+#
+# After this script runs on your env, the site will be recompiled, and ready for visitors.
+#
+
+echo
+read -n1 -p "Choose the environment to recompile:  1) Dev  2) Stage  3) Prod ? " envanswer
+echo
+
+    case $envanswer in
+       
+        #DEV Option
+        1)
+            
+            ENV=DEV
+			DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+			read -n1 -p "Use Watch mode?" watchanswer
+			echo
+            case $watchanswer in     
+          
+                n)
+                    echo "Will not watch"
+					SETTINGS=("clear cache" "install assets as symlinks" "force dump assets" "no watch")
+					 CMD=(
+						"cache:clear --env=dev"
+						"assets:install --symlink --env=dev"
+						"assetic:dump --env=dev --force"
+					)
+                    ;;
+
+                y)
+                    echo "Will WATCH after dump completed. Use ctrl+c to exit"
+					SETTINGS=("clear cache" "install assets as symlinks" "force dump assets" "watch assets after dumping (use ctrl+c to exit)")
+                    CMD=(
+						"cache:clear --env=dev"
+						"assets:install --symlink --env=dev"
+						"assetic:dump --env=dev --force --watch"
+					)
+                    ;;
+            esac
+			;;
+        
+         
+        #STAGE options
+        2)
+            ENV=STAGE
+			DIR="/srv/http/ritapp"
+
+			SETTINGS=("Recompiling dev first." "no debug"  "install assets" "clear cache" "warmup cache" "dump assets")
+			CMD=(
+				"assets:install --symlink --env=dev"
+				"cache:clear --env=dev"
+				"assetic:dump --env=dev" 
+				"assets:install --symlink --env=stage --no-debug "
+				"cache:clear --env=stage --no-debug" 
+				"cache:warmup --env=stage --no-debug"
+				"assetic:dump --env=stage --no-debug"
+			)
+            ;;
+        
+     
+        #PROD options
+        3)
+            ENV=PROD
+			DIR=""
+
+            read -n1 -p "Use Symlink Mode? Recommended(y)" symlinkanswer
+			echo
+            case $symlinkanswer in
+                n)
+					SETTINGS=("install hard assets" "no debug" "warm up cache" "dump assets.")
+                    echo "For env=$ENV (no debug), now physically copying assets, clearing / warming cache, dumping assets."
+					CMD=(
+						"assets:install --env=prod --no-debug"
+						"cache:clear --env=prod --no-debug"
+						"cache:warmup --env=prod --no-debug"
+						"assetic:dump --env=prod --no-debug"
+					)
+                    ;;
+
+                y)
+                    SETTINGS=("install assets as symlinks" "no debug" "warm up cache" "dump assets.")
+                    CMD=(
+						"assets:install --symlink --env=prod --no-debug"
+						"cache:clear --env=prod --no-debug"
+						"cache:warmup --env=prod --no-debug"
+						"assetic:dump --env=prod --no-debug"
+					)
+					
+                    ;;
+            esac
+            ;;
+    esac
+
+echo
+echo "You are about to recompile Symfony $ENV Environment, please verify the following settings":
+echo "------------------------------------------"
+echo "- $ENV"
+
+	for i in "${SETTINGS[@]}";
+	do
+		echo "- $i"
+	done
+	
+read -n1 -p "Ready to run? " readyanswer
+echo
+    case $readyanswer in
+       #user has opted to go ahead and run this command 
+        y)
+            for i in "${CMD[@]}";
+			do
+				RUN="php $DIR/app/console $i"
+				echo
+				echo "---------------------------"
+				echo "running " $RUN 
+				$RUN
+            done
+			
+			#run optomize onw
+			#if [ "$ENV" = "PROD" ];
+			#       then
+			#       $DIR/bin/composer-install
+			#fi
+			
+			;;
+			
+        n)
+            echo 'Cancelling per your selection!'
+            ;;
+    esac
