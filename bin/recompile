@@ -1,5 +1,7 @@
 #!/bin/bash
-# symphAstman - Symfony Assetic manager
+#
+# github wolfdogg/symphAstman - Symfony Assetic manager
+#
 # This is the symfony recompile script.  
 # It also works on dev, except when it looks for the apc settings on the
 # config_prod.yml it breaks, so those will need to be commented out first
@@ -8,21 +10,43 @@
 # Run this on your particular environment each time a change is deployed.
 # Note, you might also have to optomize the autoloader as well after complete,
 # you will see this at the bottom of the script, but its currently commented.
-
+#
 # To run this script do the following from a terminal
-# Make sure the recompile script is exctracted to your bin dir. 
 # 
-# $su <your-dev-user> the user that you plan to develop with, i.e. not root.
-# $cd <your-root-symfony-site-dir>/
-# $ln -s bin/recompile #makes a symlink in your site root for the script
-# $./reprod #run it
+# -Make sure the recompile script is exctracted to your bin dir. 
+#
+# -You will almost certainly need to readjust the DIR on each env to the actual
+# subdirectory of your site files. 
+# 
+# -You can also fine tune the CMD's to run, and the SETTINGS verbiage to match
+# your CMD's
+#
+# -$su <your-dev-user> the user that you plan to develop with, i.e. not root.
+# 
+# -$cd <your-root-symfony-site-dir>/
+# 
+# If you dont have the symlink in your site roo yet, run the following.
+# -$ln -s bin/recompile #makes a symlink in your site root for the script
+# 
+# -$./reprod #run it
 #
 # After this script runs on your env, the site will be recompiled, and ready for visitors.
-#
+
+# Putting the following vars here on top for easy access, since its likely the only variables you will need to adjust to get the script to run correctly
+
+# Your development location to the symfony files in relation to where your running the command from, preferably run it from your site root.
+DIRDEV=="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )" # a way to automate the path
+
+# Your stage location, if applicable
+DIRSTAGE="/srv/http/mysitename" #i had it this way because i would push to stage from dev location itself, thereofre never needing to cd to the stage dir, which was on the same server as dev, so i just put the actualy path here.  you can use "." if you will be running it directly from the stage site root location.
+
+# Your production location 
+DIRPROD="." # . sets it to be ran directly from symfony root
 
 echo
 read -n1 -p "Choose the environment to recompile:  1) Dev  2) Stage  3) Prod ? " envanswer
 echo
+
 
     case $envanswer in
        
@@ -30,7 +54,7 @@ echo
         1)
             
             ENV=DEV
-			DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+			DIR=$DIRDEV
 
 			read -n1 -p "Use Watch mode?" watchanswer
 			echo
@@ -62,7 +86,7 @@ echo
         #STAGE options
         2)
             ENV=STAGE
-			DIR="/srv/http/ritapp"
+			DIR=$DIRSTAGE
 
 			SETTINGS=("Recompiling dev first." "no debug"  "install assets" "clear cache" "warmup cache" "dump assets")
 			CMD=(
@@ -80,7 +104,7 @@ echo
         #PROD options
         3)
             ENV=PROD
-			DIR=""
+			DIR=$DIRPROD
 
             read -n1 -p "Use Symlink Mode? Recommended(y)" symlinkanswer
 			echo
