@@ -76,7 +76,7 @@ echo
                     CMD=(
 						"cache:clear --env=dev"
 						"assets:install --symlink --env=dev"
-						"assetic:dump --env=dev --force --watch"
+						"assetic:dump --env=dev --force assetic:watch"
 					)
                     ;;
             esac
