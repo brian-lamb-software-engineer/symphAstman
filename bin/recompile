@@ -28,7 +28,7 @@
 # If you dont have the symlink in your site root yet, run the following.
 # -$ln -s bin/recompile #makes a symlink in your site root for the script
 # 
-# -$./reprod #run it
+# -$./recompile #run it from your site root (just above the bin dir)
 #
 # After this script runs on your env, the site will be recompiled, and ready for visitors.
 
