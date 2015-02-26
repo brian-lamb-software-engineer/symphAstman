@@ -72,16 +72,13 @@ echo
 
                 y)
                     echo "Will WATCH after dump completed. Use ctrl+c to exit"
-					SETTINGS=("clear cache" "install assets as symlinks" "force dump assets" "watch assets after dumping (use ctrl+c to exit)")
+					SETTINGS=("clear cache" "install assets as symlinks" "watch assets, includes force dumping (use ctrl+c to exit)")
                     CMD=(
 						"cache:clear --env=dev"
 						"assets:install --symlink --env=dev"
-						"assetic:dump --env=dev --force assetic:watch"
+						"assetic:watch --env=dev --force"
 					)
                     ;;
-            esac
-			;;
-        
          
         #STAGE options
         2)
