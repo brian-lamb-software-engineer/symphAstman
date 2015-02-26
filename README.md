@@ -26,7 +26,7 @@ Installation instructions:
 
 -open a terminal run the following command
 
-    `# ./recompile`
+    # ./recompile
     
     
 The recompile script will automatically dump and cmpress all assets, and watch them for more development changes.  Essentially you just need to run this at the start of your work, and sto it at the end of the day, and let it handle your assets for you automatically freeing up your brain for the real work. 
